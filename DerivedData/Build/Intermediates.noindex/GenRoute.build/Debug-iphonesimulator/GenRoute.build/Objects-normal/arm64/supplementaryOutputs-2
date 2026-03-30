@@ -1,0 +1,44 @@
+{
+  "/Users/macbook/Desktop/IOS/GenRoute/GenRoute/Core/Base/AppString.swift" : {
+    "const-values" : "/Users/macbook/Desktop/IOS/GenRoute/DerivedData/Build/Intermediates.noindex/GenRoute.build/Debug-iphonesimulator/GenRoute.build/Objects-normal/arm64/AppString.swiftconstvalues",
+    "dependencies" : "/Users/macbook/Desktop/IOS/GenRoute/DerivedData/Build/Intermediates.noindex/GenRoute.build/Debug-iphonesimulator/GenRoute.build/Objects-normal/arm64/AppString.d",
+    "diagnostics" : "/Users/macbook/Desktop/IOS/GenRoute/DerivedData/Build/Intermediates.noindex/GenRoute.build/Debug-iphonesimulator/GenRoute.build/Objects-normal/arm64/AppString.dia",
+    "object" : "/Users/macbook/Desktop/IOS/GenRoute/DerivedData/Build/Intermediates.noindex/GenRoute.build/Debug-iphonesimulator/GenRoute.build/Objects-normal/arm64/AppString.o",
+    "swift-dependencies" : "/Users/macbook/Desktop/IOS/GenRoute/DerivedData/Build/Intermediates.noindex/GenRoute.build/Debug-iphonesimulator/GenRoute.build/Objects-normal/arm64/AppString.swiftdeps"
+  },
+  "/Users/macbook/Desktop/IOS/GenRoute/GenRoute/Core/Base/BaseViewModel.swift" : {
+    "const-values" : "/Users/macbook/Desktop/IOS/GenRoute/DerivedData/Build/Intermediates.noindex/GenRoute.build/Debug-iphonesimulator/GenRoute.build/Objects-normal/arm64/BaseViewModel.swiftconstvalues",
+    "dependencies" : "/Users/macbook/Desktop/IOS/GenRoute/DerivedData/Build/Intermediates.noindex/GenRoute.build/Debug-iphonesimulator/GenRoute.build/Objects-normal/arm64/BaseViewModel.d",
+    "diagnostics" : "/Users/macbook/Desktop/IOS/GenRoute/DerivedData/Build/Intermediates.noindex/GenRoute.build/Debug-iphonesimulator/GenRoute.build/Objects-normal/arm64/BaseViewModel.dia",
+    "object" : "/Users/macbook/Desktop/IOS/GenRoute/DerivedData/Build/Intermediates.noindex/GenRoute.build/Debug-iphonesimulator/GenRoute.build/Objects-normal/arm64/BaseViewModel.o",
+    "swift-dependencies" : "/Users/macbook/Desktop/IOS/GenRoute/DerivedData/Build/Intermediates.noindex/GenRoute.build/Debug-iphonesimulator/GenRoute.build/Objects-normal/arm64/BaseViewModel.swiftdeps"
+  },
+  "/Users/macbook/Desktop/IOS/GenRoute/GenRoute/Core/Data/AppModelContainer.swift" : {
+    "const-values" : "/Users/macbook/Desktop/IOS/GenRoute/DerivedData/Build/Intermediates.noindex/GenRoute.build/Debug-iphonesimulator/GenRoute.build/Objects-normal/arm64/AppModelContainer.swiftconstvalues",
+    "dependencies" : "/Users/macbook/Desktop/IOS/GenRoute/DerivedData/Build/Intermediates.noindex/GenRoute.build/Debug-iphonesimulator/GenRoute.build/Objects-normal/arm64/AppModelContainer.d",
+    "diagnostics" : "/Users/macbook/Desktop/IOS/GenRoute/DerivedData/Build/Intermediates.noindex/GenRoute.build/Debug-iphonesimulator/GenRoute.build/Objects-normal/arm64/AppModelContainer.dia",
+    "object" : "/Users/macbook/Desktop/IOS/GenRoute/DerivedData/Build/Intermediates.noindex/GenRoute.build/Debug-iphonesimulator/GenRoute.build/Objects-normal/arm64/AppModelContainer.o",
+    "swift-dependencies" : "/Users/macbook/Desktop/IOS/GenRoute/DerivedData/Build/Intermediates.noindex/GenRoute.build/Debug-iphonesimulator/GenRoute.build/Objects-normal/arm64/AppModelContainer.swiftdeps"
+  },
+  "/Users/macbook/Desktop/IOS/GenRoute/GenRoute/Core/Data/JourneysRepository.swift" : {
+    "const-values" : "/Users/macbook/Desktop/IOS/GenRoute/DerivedData/Build/Intermediates.noindex/GenRoute.build/Debug-iphonesimulator/GenRoute.build/Objects-normal/arm64/JourneysRepository.swiftconstvalues",
+    "dependencies" : "/Users/macbook/Desktop/IOS/GenRoute/DerivedData/Build/Intermediates.noindex/GenRoute.build/Debug-iphonesimulator/GenRoute.build/Objects-normal/arm64/JourneysRepository.d",
+    "diagnostics" : "/Users/macbook/Desktop/IOS/GenRoute/DerivedData/Build/Intermediates.noindex/GenRoute.build/Debug-iphonesimulator/GenRoute.build/Objects-normal/arm64/JourneysRepository.dia",
+    "object" : "/Users/macbook/Desktop/IOS/GenRoute/DerivedData/Build/Intermediates.noindex/GenRoute.build/Debug-iphonesimulator/GenRoute.build/Objects-normal/arm64/JourneysRepository.o",
+    "swift-dependencies" : "/Users/macbook/Desktop/IOS/GenRoute/DerivedData/Build/Intermediates.noindex/GenRoute.build/Debug-iphonesimulator/GenRoute.build/Objects-normal/arm64/JourneysRepository.swiftdeps"
+  },
+  "/Users/macbook/Desktop/IOS/GenRoute/GenRoute/Core/Data/Models/JourneyModel.swift" : {
+    "const-values" : "/Users/macbook/Desktop/IOS/GenRoute/DerivedData/Build/Intermediates.noindex/GenRoute.build/Debug-iphonesimulator/GenRoute.build/Objects-normal/arm64/JourneyModel.swiftconstvalues",
+    "dependencies" : "/Users/macbook/Desktop/IOS/GenRoute/DerivedData/Build/Intermediates.noindex/GenRoute.build/Debug-iphonesimulator/GenRoute.build/Objects-normal/arm64/JourneyModel.d",
+    "diagnostics" : "/Users/macbook/Desktop/IOS/GenRoute/DerivedData/Build/Intermediates.noindex/GenRoute.build/Debug-iphonesimulator/GenRoute.build/Objects-normal/arm64/JourneyModel.dia",
+    "object" : "/Users/macbook/Desktop/IOS/GenRoute/DerivedData/Build/Intermediates.noindex/GenRoute.build/Debug-iphonesimulator/GenRoute.build/Objects-normal/arm64/JourneyModel.o",
+    "swift-dependencies" : "/Users/macbook/Desktop/IOS/GenRoute/DerivedData/Build/Intermediates.noindex/GenRoute.build/Debug-iphonesimulator/GenRoute.build/Objects-normal/arm64/JourneyModel.swiftdeps"
+  },
+  "/Users/macbook/Desktop/IOS/GenRoute/GenRoute/Core/Data/Models/PlaceModel.swift" : {
+    "const-values" : "/Users/macbook/Desktop/IOS/GenRoute/DerivedData/Build/Intermediates.noindex/GenRoute.build/Debug-iphonesimulator/GenRoute.build/Objects-normal/arm64/PlaceModel.swiftconstvalues",
+    "dependencies" : "/Users/macbook/Desktop/IOS/GenRoute/DerivedData/Build/Intermediates.noindex/GenRoute.build/Debug-iphonesimulator/GenRoute.build/Objects-normal/arm64/PlaceModel.d",
+    "diagnostics" : "/Users/macbook/Desktop/IOS/GenRoute/DerivedData/Build/Intermediates.noindex/GenRoute.build/Debug-iphonesimulator/GenRoute.build/Objects-normal/arm64/PlaceModel.dia",
+    "object" : "/Users/macbook/Desktop/IOS/GenRoute/DerivedData/Build/Intermediates.noindex/GenRoute.build/Debug-iphonesimulator/GenRoute.build/Objects-normal/arm64/PlaceModel.o",
+    "swift-dependencies" : "/Users/macbook/Desktop/IOS/GenRoute/DerivedData/Build/Intermediates.noindex/GenRoute.build/Debug-iphonesimulator/GenRoute.build/Objects-normal/arm64/PlaceModel.swiftdeps"
+  }
+}

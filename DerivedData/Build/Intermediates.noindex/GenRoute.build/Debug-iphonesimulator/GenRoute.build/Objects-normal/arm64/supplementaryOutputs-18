@@ -1,0 +1,37 @@
+{
+  "/Users/macbook/Desktop/IOS/GenRoute/GenRoute/Presentation/Splash/SplashScreen.swift" : {
+    "const-values" : "/Users/macbook/Desktop/IOS/GenRoute/DerivedData/Build/Intermediates.noindex/GenRoute.build/Debug-iphonesimulator/GenRoute.build/Objects-normal/arm64/SplashScreen.swiftconstvalues",
+    "dependencies" : "/Users/macbook/Desktop/IOS/GenRoute/DerivedData/Build/Intermediates.noindex/GenRoute.build/Debug-iphonesimulator/GenRoute.build/Objects-normal/arm64/SplashScreen.d",
+    "diagnostics" : "/Users/macbook/Desktop/IOS/GenRoute/DerivedData/Build/Intermediates.noindex/GenRoute.build/Debug-iphonesimulator/GenRoute.build/Objects-normal/arm64/SplashScreen.dia",
+    "object" : "/Users/macbook/Desktop/IOS/GenRoute/DerivedData/Build/Intermediates.noindex/GenRoute.build/Debug-iphonesimulator/GenRoute.build/Objects-normal/arm64/SplashScreen.o",
+    "swift-dependencies" : "/Users/macbook/Desktop/IOS/GenRoute/DerivedData/Build/Intermediates.noindex/GenRoute.build/Debug-iphonesimulator/GenRoute.build/Objects-normal/arm64/SplashScreen.swiftdeps"
+  },
+  "/Users/macbook/Desktop/IOS/GenRoute/GenRoute/Presentation/Splash/SplashScreenViewModel.swift" : {
+    "const-values" : "/Users/macbook/Desktop/IOS/GenRoute/DerivedData/Build/Intermediates.noindex/GenRoute.build/Debug-iphonesimulator/GenRoute.build/Objects-normal/arm64/SplashScreenViewModel.swiftconstvalues",
+    "dependencies" : "/Users/macbook/Desktop/IOS/GenRoute/DerivedData/Build/Intermediates.noindex/GenRoute.build/Debug-iphonesimulator/GenRoute.build/Objects-normal/arm64/SplashScreenViewModel.d",
+    "diagnostics" : "/Users/macbook/Desktop/IOS/GenRoute/DerivedData/Build/Intermediates.noindex/GenRoute.build/Debug-iphonesimulator/GenRoute.build/Objects-normal/arm64/SplashScreenViewModel.dia",
+    "object" : "/Users/macbook/Desktop/IOS/GenRoute/DerivedData/Build/Intermediates.noindex/GenRoute.build/Debug-iphonesimulator/GenRoute.build/Objects-normal/arm64/SplashScreenViewModel.o",
+    "swift-dependencies" : "/Users/macbook/Desktop/IOS/GenRoute/DerivedData/Build/Intermediates.noindex/GenRoute.build/Debug-iphonesimulator/GenRoute.build/Objects-normal/arm64/SplashScreenViewModel.swiftdeps"
+  },
+  "/Users/macbook/Desktop/IOS/GenRoute/GenRoute/Presentation/TripResult/TripResultMapGeometry.swift" : {
+    "const-values" : "/Users/macbook/Desktop/IOS/GenRoute/DerivedData/Build/Intermediates.noindex/GenRoute.build/Debug-iphonesimulator/GenRoute.build/Objects-normal/arm64/TripResultMapGeometry.swiftconstvalues",
+    "dependencies" : "/Users/macbook/Desktop/IOS/GenRoute/DerivedData/Build/Intermediates.noindex/GenRoute.build/Debug-iphonesimulator/GenRoute.build/Objects-normal/arm64/TripResultMapGeometry.d",
+    "diagnostics" : "/Users/macbook/Desktop/IOS/GenRoute/DerivedData/Build/Intermediates.noindex/GenRoute.build/Debug-iphonesimulator/GenRoute.build/Objects-normal/arm64/TripResultMapGeometry.dia",
+    "object" : "/Users/macbook/Desktop/IOS/GenRoute/DerivedData/Build/Intermediates.noindex/GenRoute.build/Debug-iphonesimulator/GenRoute.build/Objects-normal/arm64/TripResultMapGeometry.o",
+    "swift-dependencies" : "/Users/macbook/Desktop/IOS/GenRoute/DerivedData/Build/Intermediates.noindex/GenRoute.build/Debug-iphonesimulator/GenRoute.build/Objects-normal/arm64/TripResultMapGeometry.swiftdeps"
+  },
+  "/Users/macbook/Desktop/IOS/GenRoute/GenRoute/Presentation/TripResult/TripResultScreen.swift" : {
+    "const-values" : "/Users/macbook/Desktop/IOS/GenRoute/DerivedData/Build/Intermediates.noindex/GenRoute.build/Debug-iphonesimulator/GenRoute.build/Objects-normal/arm64/TripResultScreen.swiftconstvalues",
+    "dependencies" : "/Users/macbook/Desktop/IOS/GenRoute/DerivedData/Build/Intermediates.noindex/GenRoute.build/Debug-iphonesimulator/GenRoute.build/Objects-normal/arm64/TripResultScreen.d",
+    "diagnostics" : "/Users/macbook/Desktop/IOS/GenRoute/DerivedData/Build/Intermediates.noindex/GenRoute.build/Debug-iphonesimulator/GenRoute.build/Objects-normal/arm64/TripResultScreen.dia",
+    "object" : "/Users/macbook/Desktop/IOS/GenRoute/DerivedData/Build/Intermediates.noindex/GenRoute.build/Debug-iphonesimulator/GenRoute.build/Objects-normal/arm64/TripResultScreen.o",
+    "swift-dependencies" : "/Users/macbook/Desktop/IOS/GenRoute/DerivedData/Build/Intermediates.noindex/GenRoute.build/Debug-iphonesimulator/GenRoute.build/Objects-normal/arm64/TripResultScreen.swiftdeps"
+  },
+  "/Users/macbook/Desktop/IOS/GenRoute/GenRoute/Presentation/TripResult/TripResultViewModel.swift" : {
+    "const-values" : "/Users/macbook/Desktop/IOS/GenRoute/DerivedData/Build/Intermediates.noindex/GenRoute.build/Debug-iphonesimulator/GenRoute.build/Objects-normal/arm64/TripResultViewModel.swiftconstvalues",
+    "dependencies" : "/Users/macbook/Desktop/IOS/GenRoute/DerivedData/Build/Intermediates.noindex/GenRoute.build/Debug-iphonesimulator/GenRoute.build/Objects-normal/arm64/TripResultViewModel.d",
+    "diagnostics" : "/Users/macbook/Desktop/IOS/GenRoute/DerivedData/Build/Intermediates.noindex/GenRoute.build/Debug-iphonesimulator/GenRoute.build/Objects-normal/arm64/TripResultViewModel.dia",
+    "object" : "/Users/macbook/Desktop/IOS/GenRoute/DerivedData/Build/Intermediates.noindex/GenRoute.build/Debug-iphonesimulator/GenRoute.build/Objects-normal/arm64/TripResultViewModel.o",
+    "swift-dependencies" : "/Users/macbook/Desktop/IOS/GenRoute/DerivedData/Build/Intermediates.noindex/GenRoute.build/Debug-iphonesimulator/GenRoute.build/Objects-normal/arm64/TripResultViewModel.swiftdeps"
+  }
+}

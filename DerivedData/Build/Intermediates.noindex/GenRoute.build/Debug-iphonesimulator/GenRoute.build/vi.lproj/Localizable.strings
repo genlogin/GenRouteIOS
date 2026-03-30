@@ -1,0 +1,207 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>directions_arrival_message</key>
+	<string>Bạn đã đến điểm đến.</string>
+	<key>directions_arrival_title</key>
+	<string>Bạn đã đến nơi</string>
+	<key>directions_avoid_ferry</key>
+	<string>Tránh phà</string>
+	<key>directions_avoid_highway</key>
+	<string>Tránh đường cao tốc</string>
+	<key>directions_avoid_poor_road</key>
+	<string>Tránh đường xấu</string>
+	<key>directions_avoid_section</key>
+	<string>Tránh trên lộ trình</string>
+	<key>directions_avoid_toll</key>
+	<string>Tránh trạm thu phí</string>
+	<key>directions_compass_north_hint</key>
+	<string>Hướng Bắc lên</string>
+	<key>directions_continue_route_fallback</key>
+	<string>Tiếp tục trên lộ trình</string>
+	<key>directions_dev_panel_title</key>
+	<string>DEV</string>
+	<key>directions_dev_speed_label</key>
+	<string>Tốc độ mô phỏng</string>
+	<key>directions_end_section</key>
+	<string>Điểm đến (đã lưu)</string>
+	<key>directions_error_load_places_failed</key>
+	<string>Không thể tải các địa điểm đã lưu cho lộ trình này.</string>
+	<key>directions_error_no_route_found</key>
+	<string>Không tìm thấy lộ trình với tuỳ chọn hiện tại. Hãy thử đổi phương tiện hoặc tuỳ chọn tránh.</string>
+	<key>directions_error_same_place</key>
+	<string>Điểm bắt đầu và điểm đến không được trùng nhau.</string>
+	<key>directions_error_start_unknown</key>
+	<string>Không xác định được vị trí bắt đầu.</string>
+	<key>directions_focus_start_hint</key>
+	<string>Hiện điểm bắt đầu trên bản đồ</string>
+	<key>directions_maneuver_arrive_destination</key>
+	<string>Đến điểm đến</string>
+	<key>directions_maneuver_head_toward_format</key>
+	<string>Đi về phía %@</string>
+	<key>directions_nav_puck_a11y</key>
+	<string>Vị trí của bạn trên lộ trình</string>
+	<key>directions_next_maneuver_title</key>
+	<string>Tiếp theo</string>
+	<key>directions_route_error_title</key>
+	<string>Lộ trình</string>
+	<key>directions_settings_apply</key>
+	<string>Áp dụng</string>
+	<key>directions_settings_cancel</key>
+	<string>Huỷ</string>
+	<key>directions_settings_footer_note</key>
+	<string>Tuỳ chọn phà và đường xấu sẽ dùng tuyến thay thế khi có. Kết quả phụ thuộc dữ liệu Apple Maps.</string>
+	<key>directions_settings_title</key>
+	<string>Tuỳ chọn lộ trình</string>
+	<key>directions_start_label</key>
+	<string>Bắt đầu</string>
+	<key>directions_start_section</key>
+	<string>Điểm xuất phát (đã lưu)</string>
+	<key>directions_start_trip_button</key>
+	<string>Bắt đầu</string>
+	<key>directions_stop_a11y</key>
+	<string>Dừng điều hướng</string>
+	<key>directions_stop_button</key>
+	<string>Dừng</string>
+	<key>directions_stop_confirm_action</key>
+	<string>Dừng</string>
+	<key>directions_stop_confirm_message</key>
+	<string>Chuyến đi sẽ kết thúc và bạn sẽ quay lại màn tổng quan lộ trình.</string>
+	<key>directions_stop_confirm_title</key>
+	<string>Dừng điều hướng?</string>
+	<key>directions_summary_est_label</key>
+	<string>ước tính</string>
+	<key>directions_title</key>
+	<string>Chỉ đường</string>
+	<key>directions_to_next_maneuver</key>
+	<string>Còn</string>
+	<key>directions_vehicle_bicycle</key>
+	<string>Xe đạp</string>
+	<key>directions_vehicle_motorcycle</key>
+	<string>Xe máy</string>
+	<key>directions_vehicle_section</key>
+	<string>Phương tiện</string>
+	<key>directions_vehicle_type_label</key>
+	<string>Chế độ</string>
+	<key>directions_view_trip_results</key>
+	<string>Xem kết quả</string>
+	<key>home_map_base</key>
+	<string>Màn hình chính (Cơ sở Apple Map)</string>
+	<key>journey_empty_list</key>
+	<string>Chưa có hành trình nào.</string>
+	<key>language_english_continue</key>
+	<string>Tiếng Việt (Tiếp tục)</string>
+	<key>language_select</key>
+	<string>Chọn Ngôn Ngữ</string>
+	<key>map_editor_dismiss</key>
+	<string>Đóng</string>
+	<key>map_editor_no_results</key>
+	<string>Không tìm thấy kết quả</string>
+	<key>map_editor_save</key>
+	<string>Lưu</string>
+	<key>map_editor_save_desc</key>
+	<string>Nhập tên tuỳ chỉnh cho vị trí này để dễ quản lý sau này.</string>
+	<key>map_editor_save_name</key>
+	<string>Tên</string>
+	<key>map_editor_save_title</key>
+	<string>Lưu địa điểm yêu thích</string>
+	<key>map_editor_search</key>
+	<string>Tìm địa điểm</string>
+	<key>map_editor_search_prompt</key>
+	<string>Tìm hoặc chạm trên bản đồ...</string>
+	<key>onboarding_button</key>
+	<string>Bắt Đầu Ngay</string>
+	<key>onboarding_desc</key>
+	<string>Tìm tuyến đường tốt nhất qua Apple Maps một cách dễ dàng và trực quan.</string>
+	<key>onboarding_title</key>
+	<string>Chào mừng đến với GenRoute</string>
+	<key>ride_add_place</key>
+	<string>Thêm địa điểm</string>
+	<key>ride_cancel</key>
+	<string>Huỷ</string>
+	<key>ride_delete</key>
+	<string>Xoá</string>
+	<key>ride_delete_confirm_desc</key>
+	<string>Bạn có chắc muốn xoá địa điểm yêu thích này không? Hành động này không thể hoàn tác.</string>
+	<key>ride_delete_confirm_title</key>
+	<string>Xác nhận xoá</string>
+	<key>ride_directions_need_two_places_message</key>
+	<string>Hãy lưu ít nhất 2 địa điểm yêu thích để xem chỉ đường giữa chúng.</string>
+	<key>ride_directions_need_two_places_title</key>
+	<string>Cần 2 địa điểm</string>
+	<key>ride_edit_save</key>
+	<string>Lưu</string>
+	<key>ride_edit_title</key>
+	<string>Sửa tên địa điểm</string>
+	<key>ride_empty_title</key>
+	<string>Chưa có địa điểm đã lưu.
+Nhấn “Thêm địa điểm” để bắt đầu.</string>
+	<key>ride_favorite_places</key>
+	<string>ĐỊA ĐIỂM YÊU THÍCH</string>
+	<key>ride_ok</key>
+	<string>OK</string>
+	<key>ride_permission_desc</key>
+	<string>Cần quyền vị trí để tạo lộ trình. Hãy bật trong Cài đặt.</string>
+	<key>ride_permission_title</key>
+	<string>Không có quyền</string>
+	<key>ride_place_lat_lng_format</key>
+	<string>Vĩ độ: %.4f • Kinh độ: %.4f</string>
+	<key>route_duration_lt1min</key>
+	<string>&lt; 1 phút</string>
+	<key>route_duration_na</key>
+	<string>—</string>
+	<key>route_speed_na</key>
+	<string>—</string>
+	<key>settings_language</key>
+	<string>Ngôn ngữ</string>
+	<key>settings_notifications</key>
+	<string>Thông báo</string>
+	<key>settings_profile</key>
+	<string>Hồ sơ</string>
+	<key>settings_section_account</key>
+	<string>Tài khoản</string>
+	<key>settings_section_preferences</key>
+	<string>Tuỳ chọn</string>
+	<key>splash_title</key>
+	<string>GenRoute</string>
+	<key>tab_journeys</key>
+	<string>Hành trình</string>
+	<key>tab_ride</key>
+	<string>Lái xe</string>
+	<key>tab_settings</key>
+	<string>Cài đặt</string>
+	<key>trip_result_avg_speed</key>
+	<string>Tốc độ trung bình</string>
+	<key>trip_result_completed_at</key>
+	<string>Hoàn thành</string>
+	<key>trip_result_distance</key>
+	<string>Quãng đường</string>
+	<key>trip_result_distance_traveled</key>
+	<string>Quãng đường đã đi</string>
+	<key>trip_result_done</key>
+	<string>Xong</string>
+	<key>trip_result_elapsed_time</key>
+	<string>Tổng thời gian</string>
+	<key>trip_result_map_end</key>
+	<string>Kết thúc</string>
+	<key>trip_result_map_start</key>
+	<string>Bắt đầu</string>
+	<key>trip_result_max_speed</key>
+	<string>Tốc độ tối đa</string>
+	<key>trip_result_moving_time</key>
+	<string>Thời gian di chuyển</string>
+	<key>trip_result_rate_route_prompt</key>
+	<string>Đánh giá lộ trình:</string>
+	<key>trip_result_record_name</key>
+	<string>Bản ghi</string>
+	<key>trip_result_start_to_destination</key>
+	<string>Từ điểm bắt đầu đến điểm đến</string>
+	<key>trip_result_title</key>
+	<string>Tóm tắt chuyến đi</string>
+	<key>unknown_location</key>
+	<string>Vị trí không xác định</string>
+	<key>unknown_short</key>
+	<string>Không rõ</string>
+</dict>
+</plist>

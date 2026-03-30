@@ -1,0 +1,207 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>directions_arrival_message</key>
+	<string>You have reached your destination.</string>
+	<key>directions_arrival_title</key>
+	<string>You have arrived</string>
+	<key>directions_avoid_ferry</key>
+	<string>Avoid ferries</string>
+	<key>directions_avoid_highway</key>
+	<string>Avoid highways</string>
+	<key>directions_avoid_poor_road</key>
+	<string>Avoid poor roads</string>
+	<key>directions_avoid_section</key>
+	<string>Avoid on route</string>
+	<key>directions_avoid_toll</key>
+	<string>Avoid tolls</string>
+	<key>directions_compass_north_hint</key>
+	<string>North up</string>
+	<key>directions_continue_route_fallback</key>
+	<string>Continue on your route</string>
+	<key>directions_dev_panel_title</key>
+	<string>DEV</string>
+	<key>directions_dev_speed_label</key>
+	<string>Simulated speed</string>
+	<key>directions_end_section</key>
+	<string>Destination (saved)</string>
+	<key>directions_error_load_places_failed</key>
+	<string>Could not load saved places for this route.</string>
+	<key>directions_error_no_route_found</key>
+	<string>Could not find a route with these options. Try changing vehicle or avoid settings.</string>
+	<key>directions_error_same_place</key>
+	<string>Start and destination cannot be the same place.</string>
+	<key>directions_error_start_unknown</key>
+	<string>Could not determine start location.</string>
+	<key>directions_focus_start_hint</key>
+	<string>Show start on map</string>
+	<key>directions_maneuver_arrive_destination</key>
+	<string>Arrive at destination</string>
+	<key>directions_maneuver_head_toward_format</key>
+	<string>Head toward %@</string>
+	<key>directions_nav_puck_a11y</key>
+	<string>Your position on route</string>
+	<key>directions_next_maneuver_title</key>
+	<string>Next</string>
+	<key>directions_route_error_title</key>
+	<string>Route</string>
+	<key>directions_settings_apply</key>
+	<string>Apply</string>
+	<key>directions_settings_cancel</key>
+	<string>Cancel</string>
+	<key>directions_settings_footer_note</key>
+	<string>Ferry and poor-road options use alternate routes when available. Results depend on Apple Maps data.</string>
+	<key>directions_settings_title</key>
+	<string>Route options</string>
+	<key>directions_start_label</key>
+	<string>Start</string>
+	<key>directions_start_section</key>
+	<string>Start (saved)</string>
+	<key>directions_start_trip_button</key>
+	<string>Start</string>
+	<key>directions_stop_a11y</key>
+	<string>Stop navigation</string>
+	<key>directions_stop_button</key>
+	<string>Stop</string>
+	<key>directions_stop_confirm_action</key>
+	<string>Stop</string>
+	<key>directions_stop_confirm_message</key>
+	<string>Your trip will end and you will return to route overview.</string>
+	<key>directions_stop_confirm_title</key>
+	<string>Stop navigation?</string>
+	<key>directions_summary_est_label</key>
+	<string>est.</string>
+	<key>directions_title</key>
+	<string>Directions</string>
+	<key>directions_to_next_maneuver</key>
+	<string>In</string>
+	<key>directions_vehicle_bicycle</key>
+	<string>Bicycle</string>
+	<key>directions_vehicle_motorcycle</key>
+	<string>Motorcycle</string>
+	<key>directions_vehicle_section</key>
+	<string>Vehicle</string>
+	<key>directions_vehicle_type_label</key>
+	<string>Mode</string>
+	<key>directions_view_trip_results</key>
+	<string>View results</string>
+	<key>home_map_base</key>
+	<string>Home Screen (Apple Map Base)</string>
+	<key>journey_empty_list</key>
+	<string>No past journeys found.</string>
+	<key>language_english_continue</key>
+	<string>English (Continue)</string>
+	<key>language_select</key>
+	<string>Select Language</string>
+	<key>map_editor_dismiss</key>
+	<string>Dismiss</string>
+	<key>map_editor_no_results</key>
+	<string>No results found</string>
+	<key>map_editor_save</key>
+	<string>Save</string>
+	<key>map_editor_save_desc</key>
+	<string>Enter a custom name for this location to manage it later.</string>
+	<key>map_editor_save_name</key>
+	<string>Name</string>
+	<key>map_editor_save_title</key>
+	<string>Save favorite place</string>
+	<key>map_editor_search</key>
+	<string>Search Places</string>
+	<key>map_editor_search_prompt</key>
+	<string>Search or tap on map...</string>
+	<key>onboarding_button</key>
+	<string>Get Started</string>
+	<key>onboarding_desc</key>
+	<string>Find the best routes using Apple Maps easily and intuitively.</string>
+	<key>onboarding_title</key>
+	<string>Welcome to GenRoute</string>
+	<key>ride_add_place</key>
+	<string>Add Place</string>
+	<key>ride_cancel</key>
+	<string>Cancel</string>
+	<key>ride_delete</key>
+	<string>Delete</string>
+	<key>ride_delete_confirm_desc</key>
+	<string>Are you sure you want to delete this favorite place? This action cannot be undone.</string>
+	<key>ride_delete_confirm_title</key>
+	<string>Confirm deletion</string>
+	<key>ride_directions_need_two_places_message</key>
+	<string>Save at least two favorite places to get directions between them.</string>
+	<key>ride_directions_need_two_places_title</key>
+	<string>Need two places</string>
+	<key>ride_edit_save</key>
+	<string>Save</string>
+	<key>ride_edit_title</key>
+	<string>Edit location name</string>
+	<key>ride_empty_title</key>
+	<string>No saved places yet.
+Tap 'Add Place' to start.</string>
+	<key>ride_favorite_places</key>
+	<string>FAVORITE PLACES</string>
+	<key>ride_ok</key>
+	<string>OK</string>
+	<key>ride_permission_desc</key>
+	<string>We need location access to build routes. Please enable it in Settings.</string>
+	<key>ride_permission_title</key>
+	<string>Permission denied</string>
+	<key>ride_place_lat_lng_format</key>
+	<string>Lat: %.4f • Lng: %.4f</string>
+	<key>route_duration_lt1min</key>
+	<string>&lt; 1 min</string>
+	<key>route_duration_na</key>
+	<string>—</string>
+	<key>route_speed_na</key>
+	<string>—</string>
+	<key>settings_language</key>
+	<string>Language</string>
+	<key>settings_notifications</key>
+	<string>Notifications</string>
+	<key>settings_profile</key>
+	<string>Profile</string>
+	<key>settings_section_account</key>
+	<string>Account</string>
+	<key>settings_section_preferences</key>
+	<string>Preferences</string>
+	<key>splash_title</key>
+	<string>GenRoute</string>
+	<key>tab_journeys</key>
+	<string>Journeys</string>
+	<key>tab_ride</key>
+	<string>Ride</string>
+	<key>tab_settings</key>
+	<string>Settings</string>
+	<key>trip_result_avg_speed</key>
+	<string>Average speed</string>
+	<key>trip_result_completed_at</key>
+	<string>Completed</string>
+	<key>trip_result_distance</key>
+	<string>Distance</string>
+	<key>trip_result_distance_traveled</key>
+	<string>Distance traveled</string>
+	<key>trip_result_done</key>
+	<string>Done</string>
+	<key>trip_result_elapsed_time</key>
+	<string>Elapsed time</string>
+	<key>trip_result_map_end</key>
+	<string>End</string>
+	<key>trip_result_map_start</key>
+	<string>Start</string>
+	<key>trip_result_max_speed</key>
+	<string>Max speed</string>
+	<key>trip_result_moving_time</key>
+	<string>Moving time</string>
+	<key>trip_result_rate_route_prompt</key>
+	<string>Rate this route:</string>
+	<key>trip_result_record_name</key>
+	<string>Record</string>
+	<key>trip_result_start_to_destination</key>
+	<string>Start to destination</string>
+	<key>trip_result_title</key>
+	<string>Trip summary</string>
+	<key>unknown_location</key>
+	<string>Unknown location</string>
+	<key>unknown_short</key>
+	<string>Unknown</string>
+</dict>
+</plist>

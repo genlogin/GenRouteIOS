@@ -38,6 +38,11 @@ final class DirectionsScreenViewModel: BaseViewModel {
     /// Khoảng cách còn lại tới hết bước chỉ dẫn hiện tại (mét).
     @Published private(set) var distanceToNextManeuverMeters: CLLocationDistance = 0
 
+    /// Heading cho mini map preview (độ, theo chiều kim đồng hồ từ Bắc).
+    @Published private(set) var navigationHeadingDegrees: CLLocationDirection = 0
+    /// Route đã pre-compute sang hệ toạ độ phẳng — dùng cho mini map.
+    private(set) var navigationRouteStatic: NavigationRouteStatic?
+
     /// Dialog sau khi tới đích / dừng; bấm nút sẽ đi tới màn kết quả và giải phóng stack chỉ đường.
     @Published var showTripCompletionDialog: Bool = false
     private var navigationSessionStart: Date?
@@ -176,6 +181,7 @@ final class DirectionsScreenViewModel: BaseViewModel {
         distanceTraveledAlongRoute = 0
         currentManeuverInstruction = ""
         distanceToNextManeuverMeters = 0
+        navigationHeadingDegrees = 0
         showTripCompletionDialog = false
         pendingTripSummary = nil
         navigationSessionStart = nil
@@ -237,6 +243,9 @@ final class DirectionsScreenViewModel: BaseViewModel {
                 let heading: CLLocationDirection? = prevLoc.distance(from: curLoc) > 1.5
                     ? Self.bearingDegrees(from: previousPuck, to: coord)
                     : nil
+                if let h = heading {
+                    self.navigationHeadingDegrees = h
+                }
                 previousPuck = coord
                 followNavigationCamera(to: coord, headingDegrees: heading)
 
@@ -267,6 +276,9 @@ final class DirectionsScreenViewModel: BaseViewModel {
                     if a.distance(from: b) > 3 {
                         heading = Self.bearingDegrees(from: prev, to: loc.coordinate)
                     }
+                }
+                if let h = heading {
+                    self.navigationHeadingDegrees = h
                 }
                 self.lastPuckForCameraBearing = loc.coordinate
                 self.followNavigationCamera(to: loc.coordinate, headingDegrees: heading)
@@ -422,6 +434,7 @@ final class DirectionsScreenViewModel: BaseViewModel {
         distanceTraveledAlongRoute = 0
         currentManeuverInstruction = ""
         distanceToNextManeuverMeters = 0
+        navigationHeadingDegrees = 0
         navigationSessionStart = nil
         maxObservedSpeedKmh = 0
     }
@@ -432,6 +445,7 @@ final class DirectionsScreenViewModel: BaseViewModel {
         liveNavigationService?.stop()
         liveNavigationService = nil
         activeRouteSampler = nil
+        navigationRouteStatic = nil
         route = nil
     }
 
@@ -443,6 +457,7 @@ final class DirectionsScreenViewModel: BaseViewModel {
             let calculated = try await routingService.calculateRoute(from: start, to: end, options: routeOptions)
             route = calculated
             activeRouteSampler = RoutePolylineSampler(polyline: calculated.polyline)
+            navigationRouteStatic = NavigationRouteStatic(coordinates: calculated.polyline.routeCoordinates)
             fitMap(to: calculated)
         } catch DirectionsRoutingError.noRouteFound {
             errorMessage = String(localized: "directions_error_no_route_found")

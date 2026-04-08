@@ -71,6 +71,7 @@ enum AppString {
     static let directionsArrivalTitle: LocalizedStringKey = "directions_arrival_title"
     static let directionsArrivalMessage: LocalizedStringKey = "directions_arrival_message"
     static let directionsViewTripResults: LocalizedStringKey = "directions_view_trip_results"
+    static let directionsMinimapA11y: LocalizedStringKey = "directions_minimap_a11y"
 
     // Trip result
     static let tripResultTitle: LocalizedStringKey = "trip_result_title"

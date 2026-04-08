@@ -42,6 +42,8 @@ final class DirectionsScreenViewModel: BaseViewModel {
     @Published private(set) var navigationHeadingDegrees: CLLocationDirection = 0
     /// Route đã pre-compute sang hệ toạ độ phẳng — dùng cho mini map.
     private(set) var navigationRouteStatic: NavigationRouteStatic?
+    /// Lane spokes đã tính từ route — dùng cho mini map.
+    private(set) var navigationLaneSpokes: [LaneSpoke] = []
 
     /// Dialog sau khi tới đích / dừng; bấm nút sẽ đi tới màn kết quả và giải phóng stack chỉ đường.
     @Published var showTripCompletionDialog: Bool = false
@@ -446,6 +448,7 @@ final class DirectionsScreenViewModel: BaseViewModel {
         liveNavigationService = nil
         activeRouteSampler = nil
         navigationRouteStatic = nil
+        navigationLaneSpokes = []
         route = nil
     }
 
@@ -458,6 +461,7 @@ final class DirectionsScreenViewModel: BaseViewModel {
             route = calculated
             activeRouteSampler = RoutePolylineSampler(polyline: calculated.polyline)
             navigationRouteStatic = NavigationRouteStatic(coordinates: calculated.polyline.routeCoordinates)
+            navigationLaneSpokes = MiniMapLaneGenerator.generateLanes(from: calculated)
             fitMap(to: calculated)
         } catch DirectionsRoutingError.noRouteFound {
             errorMessage = String(localized: "directions_error_no_route_found")

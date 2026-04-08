@@ -6,6 +6,11 @@ struct MiniMapView: View {
     @ObservedObject var viewModel: MiniMapViewModel
     var diameter: CGFloat = 200
 
+    /// Màu xanh nước biển cho tuyến chính — Android 0xFF29B6F6.
+    private let routeBlue = Color(red: 0.16, green: 0.71, blue: 0.96)
+    /// Màu xám cho lane phụ — Android 0xFF9E9E9E.
+    private let laneGray = Color(white: 0.62)
+
     var body: some View {
         ZStack {
             // Nền đen
@@ -13,8 +18,18 @@ struct MiniMapView: View {
                 .fill(Color.black)
 
             if viewModel.isReady {
+                // Lane phụ (xám) — vẽ trước, nằm dưới cùng
+                ForEach(viewModel.laneScreenSegments.indices, id: \.self) { idx in
+                    routePath(
+                        points: viewModel.laneScreenSegments[idx],
+                        strokeColor: laneGray,
+                        outlineWidth: 7,
+                        strokeWidth: 2
+                    )
+                }
+
                 // Tuyến còn lại (xanh) — vẽ outline đen rồi đè stroke xanh
-                routePath(points: viewModel.remainingScreenPoints, strokeColor: Color(red: 0.16, green: 0.71, blue: 0.96), outlineWidth: 12, strokeWidth: 4)
+                routePath(points: viewModel.remainingScreenPoints, strokeColor: routeBlue, outlineWidth: 12, strokeWidth: 4)
 
                 // Tuyến đã đi (trắng) — vẽ đè lên trên
                 routePath(points: viewModel.traveledScreenPoints, strokeColor: .white, outlineWidth: 12, strokeWidth: 4)

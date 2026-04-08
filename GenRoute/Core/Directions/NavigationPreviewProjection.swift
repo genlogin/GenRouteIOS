@@ -3,11 +3,12 @@ import Foundation
 
 /// Phép chiếu toạ độ địa lý sang toạ độ màn hình cho mini map preview.
 protocol NavigationPreviewProjecting {
-    /// Chuyển một điểm địa lý sang hệ toạ độ cục bộ (mét) so với tâm, có xoay theo heading nếu cần.
+    /// Chuyển một điểm địa lý sang hệ cục bộ (mét), xoay heading-up kiểu Google Maps:
+    /// hướng `bearingDegrees` sẽ trùng **+Y** (sau đó map lên màn hình, +Y sẽ là “đi lên trên”).
     func projectToLocal(
         point: CLLocationCoordinate2D,
         center: CLLocationCoordinate2D,
-        bearingDegrees: Double?
+        bearingDegrees: Double
     ) -> (x: Double, y: Double)
 
     /// Chuyển mảng toạ độ cục bộ (mét) sang điểm màn hình (pixel).
@@ -25,7 +26,7 @@ struct EquirectangularProjection: NavigationPreviewProjecting {
     func projectToLocal(
         point: CLLocationCoordinate2D,
         center: CLLocationCoordinate2D,
-        bearingDegrees: Double?
+        bearingDegrees: Double
     ) -> (x: Double, y: Double) {
         let r = Self.earthRadius
         let dLat = (point.latitude - center.latitude) * .pi / 180.0
@@ -35,11 +36,7 @@ struct EquirectangularProjection: NavigationPreviewProjecting {
         let x = dLon * cos(centerLatRad) * r
         let y = dLat * r
 
-        guard let bearing = bearingDegrees else {
-            return (x, y)
-        }
-
-        let theta = -bearing * .pi / 180.0
+        let theta = -bearingDegrees * .pi / 180.0
         let cosT = cos(theta)
         let sinT = sin(theta)
         let rx = x * cosT + y * sinT

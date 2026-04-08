@@ -6,7 +6,7 @@ import Foundation
 struct TripResultSummary: Sendable, Codable {
     var recordName: String
     var completedAt: Date
-    /// Khoảng cách xuất phát → đích: theo `MKRoute` nếu có, không thì geodesic (m).
+    /// Khoảng cách xuất phát → đích: theo tuyến đã tính (Valhalla/MapKit) nếu có, không thì geodesic (m).
     var startToDestinationMeters: CLLocationDistance
     /// Quãng đường đã đi theo thực tế / mô phỏng trên tuyến, mét.
     var distanceTraveledMeters: CLLocationDistance

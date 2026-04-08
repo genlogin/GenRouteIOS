@@ -19,17 +19,28 @@ final class DirectionsScreenViewModel: BaseViewModel {
     /// Điểm đến đã resolve từ DB.
     @Published private(set) var endEndpoint: RouteEndpoint?
 
-    @Published var route: MKRoute?
+    /// Tuyến hiển thị (mặc định Valhalla); MapKit chỉ khi Valhalla lỗi.
+    @Published private(set) var navigationPolyline: MKPolyline?
+    @Published private(set) var navigationRouteDistanceMeters: CLLocationDistance = 0
+    @Published private(set) var navigationRouteDurationSeconds: TimeInterval = 0
+    private var navigationTurnSteps: [NavigationTurnStep] = []
+
     @Published var routeOptions: DirectionsRouteOptions
     @Published var cameraPosition: MapCameraPosition = .automatic
     /// Góc xoay bản đồ (độ), dùng cho la bàn tùy chỉnh — đồng bộ qua `onMapCameraChange`.
     @Published private(set) var mapHeadingDegrees: Double = 0
-    /// Heading (0° = Bắc, cùng chiều MapKit) cho mini-map **heading-up**: ưu tiên course/GPS, không phụ thuộc `mapHeadingDegrees` khi camera `.region`.
-    @Published private(set) var navigationPreviewHeadingDegrees: CLLocationDirection = 0
-    /// Các đoạn lane phụ (2 điểm/bearing) giống Android MapLibre `buildLanePolylinesNearUser`.
-    @Published private(set) var navigationPreviewLanePolylines: [[CLLocationCoordinate2D]] = []
     @Published var isCalculating = true
     @Published var errorMessage: String?
+
+    // MARK: - Dev mini-map preview (Valhalla context)
+
+    @Published private(set) var devPreviewRouteCoordinates: [CLLocationCoordinate2D] = []
+    @Published private(set) var devPreviewLanePolylines: [[CLLocationCoordinate2D]] = []
+    @Published private(set) var devPreviewDebugText: String = ""
+    private var devPreviewIntersections: [ValhallaOSRMRouteService.Intersection] = []
+    private var devPreviewRouteSampler: RoutePolylineSampler?
+    private var lastLoggedDevPreviewSummary: String?
+    private var lastDevLaneRefreshAt: Date = .distantPast
 
     /// Puck điều hướng: dev = giả lập dọc tuyến; release = GPS thật.
     @Published private(set) var navigationPuckCoordinate: CLLocationCoordinate2D?
@@ -37,17 +48,10 @@ final class DirectionsScreenViewModel: BaseViewModel {
 
     /// Quãng đường đã đi dọc tuyến (ước lượng từ polyline).
     @Published private(set) var distanceTraveledAlongRoute: CLLocationDistance = 0
-    /// Chỉ dẫn bước hiện tại (từ `MKRoute.Step`).
+    /// Chỉ dẫn bước hiện tại (OSRM/Valhalla hoặc MapKit fallback).
     @Published private(set) var currentManeuverInstruction: String = ""
     /// Khoảng cách còn lại tới hết bước chỉ dẫn hiện tại (mét).
     @Published private(set) var distanceToNextManeuverMeters: CLLocationDistance = 0
-
-    /// Heading cho mini map preview (độ, theo chiều kim đồng hồ từ Bắc).
-    @Published private(set) var navigationHeadingDegrees: CLLocationDirection = 0
-    /// Route đã pre-compute sang hệ toạ độ phẳng — dùng cho mini map.
-    private(set) var navigationRouteStatic: NavigationRouteStatic?
-    /// Lane spokes đã tính từ route — dùng cho mini map.
-    private(set) var navigationLaneSpokes: [LaneSpoke] = []
 
     /// Dialog sau khi tới đích / dừng; bấm nút sẽ đi tới màn kết quả và giải phóng stack chỉ đường.
     @Published var showTripCompletionDialog: Bool = false
@@ -65,6 +69,7 @@ final class DirectionsScreenViewModel: BaseViewModel {
     private var lastPuckForCameraBearing: CLLocationCoordinate2D?
     private var smoothingTask: Task<Void, Never>?
     private let keyframeSmoother = NavigationKeyframeSmoother()
+    private var lastDevPreviewBearingDegrees: CLLocationDirection?
 
     /// Camera điều hướng: zoom gần + pitch (giống Google Maps).
     private let navigationCameraDistance: CLLocationDistance = 720
@@ -94,16 +99,15 @@ final class DirectionsScreenViewModel: BaseViewModel {
         self.routeOptions = preferencesStore.loadOptions()
         super.init()
 
-        #if DEBUG
-        print("DirectionsScreenViewModel init: startPlaceId=\(String(describing: navigation.startPlaceId)) startCoord=\(String(describing: self.startCoordinate)) endPlaceId=\(navigation.endPlaceId)")
-        #endif
+        DirectionsDevLog.log(
+            "VM init startPlaceId=\(String(describing: navigation.startPlaceId)) startCoord=\(String(describing: self.startCoordinate)) endPlaceId=\(navigation.endPlaceId)"
+        )
     }
 
     func loadRouteFromSavedPlaces() async {
         stopNavigation()
         errorMessage = nil
-        route = nil
-        activeRouteSampler = nil
+        clearComputedRouteState()
         startEndpoint = nil
         endEndpoint = nil
         isCalculating = true
@@ -131,13 +135,15 @@ final class DirectionsScreenViewModel: BaseViewModel {
             return
         }
 
-        #if DEBUG
         if let coord = startCoordinate {
-            print("loadRouteFromSavedPlaces: startCoord=\(coord.latitude),\(coord.longitude) endPlaceId=\(endPlaceId) end=\(endPlace.latitude),\(endPlace.longitude)")
+            DirectionsDevLog.log(
+                "loadRoute startCoord=\(coord.latitude),\(coord.longitude) endPlaceId=\(endPlaceId) end=\(endPlace.latitude),\(endPlace.longitude)"
+            )
         } else {
-            print("loadRouteFromSavedPlaces: startPlaceId=\(String(describing: startPlaceId)) endPlaceId=\(endPlaceId) end=\(endPlace.latitude),\(endPlace.longitude)")
+            DirectionsDevLog.log(
+                "loadRoute startPlaceId=\(String(describing: startPlaceId)) endPlaceId=\(endPlaceId) end=\(endPlace.latitude),\(endPlace.longitude)"
+            )
         }
-        #endif
 
         let end = RouteEndpoint(place: endPlace)
         startEndpoint = start
@@ -158,30 +164,32 @@ final class DirectionsScreenViewModel: BaseViewModel {
 
     /// Bắt đầu “di chuyển”: dev → giả lập theo tốc độ slider; release → GPS thật.
     func startNavigation() {
-        guard let route = route, let sampler = activeRouteSampler, let startCoord = startEndpoint?.coordinate else { return }
-        stopNavigation()
+        guard navigationPolyline != nil, let sampler = activeRouteSampler, let startCoord = startEndpoint?.coordinate else { return }
+        // `stopNavigation()` mặc định xóa cache Valhalla — giữ lại để mini-map vẫn có round context khi bắt đầu chạy.
+        stopNavigation(preserveDevPreview: true)
         isNavigating = true
         distanceTraveledAlongRoute = 0
         navigationSessionStart = Date()
         maxObservedSpeedKmh = 0
         lastPuckForCameraBearing = startCoord
+        lastDevPreviewBearingDegrees = nil
         navigationPuckCoordinate = startCoord
         keyframeSmoother.reset()
-        updateNavigationPreviewHeading(explicitCourse: nil)
-        refreshNavigationPreviewLanePolylines()
+        refreshDevPreviewLanePolylinesIfPossible(force: true)
 
-        let totalLen = min(route.distance, sampler.totalLength)
-        refreshTurnByTurn(for: route, traveled: 0, totalPolylineLength: totalLen)
+        let polyLen = sampler.totalLength
+        refreshTurnByTurn(traveled: 0, totalPolylineLength: polyLen)
         followNavigationCamera(to: startCoord, headingDegrees: nil)
 
         if DirectionsEnvironment.isDev {
-            startSimulatedPuckAlongRoute(sampler: sampler, totalPolylineLength: totalLen, startCoordinate: startCoord)
+            startSimulatedPuckAlongRoute(sampler: sampler, totalPolylineLength: polyLen, startCoordinate: startCoord)
         } else {
-            startLiveUserPuck(route: route, sampler: sampler, totalPolylineLength: totalLen)
+            startLiveUserPuck(sampler: sampler, totalPolylineLength: polyLen)
         }
     }
 
-    func stopNavigation() {
+    /// - Parameter preserveDevPreview: `true` khi chuyển thẳng sang `startNavigation()` — giữ polyline Valhalla + intersections cho mini-map.
+    func stopNavigation(preserveDevPreview: Bool = false) {
         simulationTask?.cancel()
         simulationTask = nil
         smoothingTask?.cancel()
@@ -190,17 +198,22 @@ final class DirectionsScreenViewModel: BaseViewModel {
         liveNavigationService = nil
         isNavigating = false
         lastPuckForCameraBearing = nil
+        lastDevPreviewBearingDegrees = nil
         navigationPuckCoordinate = nil
         distanceTraveledAlongRoute = 0
         currentManeuverInstruction = ""
         distanceToNextManeuverMeters = 0
-        navigationHeadingDegrees = 0
         showTripCompletionDialog = false
         pendingTripSummary = nil
         navigationSessionStart = nil
         maxObservedSpeedKmh = 0
-        navigationPreviewHeadingDegrees = 0
-        navigationPreviewLanePolylines = []
+        if !preserveDevPreview {
+            replaceDevPreviewRouteCoordinates([])
+            devPreviewLanePolylines = []
+            devPreviewIntersections = []
+            devPreviewDebugText = ""
+            lastLoggedDevPreviewSummary = nil
+        }
     }
 
     /// Gọi sau khi user bấm Stop và xác nhận: chốt thống kê, hiện dialog hoàn thành.
@@ -230,7 +243,7 @@ final class DirectionsScreenViewModel: BaseViewModel {
         totalPolylineLength: CLLocationDistance,
         startCoordinate: CLLocationCoordinate2D
     ) {
-        guard let route = route, sampler.totalLength > 0 else {
+        guard navigationPolyline != nil, sampler.totalLength > 0 else {
             isNavigating = false
             return
         }
@@ -240,7 +253,7 @@ final class DirectionsScreenViewModel: BaseViewModel {
             var lastDate = Date()
             var previousPuck = startCoordinate
             while !Task.isCancelled {
-                try? await Task.sleep(for: .milliseconds(50))
+                try? await Task.sleep(for: .milliseconds(33))
                 guard isNavigating else { break }
                 let now = Date()
                 let dt = now.timeIntervalSince(lastDate)
@@ -258,21 +271,18 @@ final class DirectionsScreenViewModel: BaseViewModel {
                 let heading: CLLocationDirection? = prevLoc.distance(from: curLoc) > 1.5
                     ? Self.bearingDegrees(from: previousPuck, to: coord)
                     : nil
-                if let h = heading {
-                    self.navigationHeadingDegrees = h
-                }
+                if let h = heading { self.lastDevPreviewBearingDegrees = h }
                 previousPuck = coord
-                updateNavigationPreviewHeading(explicitCourse: heading)
-                refreshNavigationPreviewLanePolylines()
+                refreshDevPreviewLanePolylinesIfPossible()
                 followNavigationCamera(to: coord, headingDegrees: heading)
 
-                refreshTurnByTurn(for: route, traveled: distance, totalPolylineLength: totalPolylineLength)
+                refreshTurnByTurn(traveled: distance, totalPolylineLength: totalPolylineLength)
                 if !isNavigating { break }
             }
         }
     }
 
-    private func startLiveUserPuck(route: MKRoute, sampler: RoutePolylineSampler, totalPolylineLength: CLLocationDistance) {
+    private func startLiveUserPuck(sampler: RoutePolylineSampler, totalPolylineLength: CLLocationDistance) {
         let service = LiveNavigationLocationService()
         liveNavigationService = service
         keyframeSmoother.reset()
@@ -284,10 +294,10 @@ final class DirectionsScreenViewModel: BaseViewModel {
                 guard let smooth = keyframeSmoother.sample(at: Date().timeIntervalSince1970) else { continue }
                 navigationPuckCoordinate = smooth.coordinate
                 distanceTraveledAlongRoute = smooth.traveledMeters
-                updateNavigationPreviewHeading(explicitCourse: smooth.headingDegrees)
-                refreshNavigationPreviewLanePolylines()
+                if let h = smooth.headingDegrees { self.lastDevPreviewBearingDegrees = h }
+                refreshDevPreviewLanePolylinesIfPossible()
                 followNavigationCamera(to: smooth.coordinate, headingDegrees: smooth.headingDegrees)
-                refreshTurnByTurn(for: route, traveled: smooth.traveledMeters, totalPolylineLength: totalPolylineLength)
+                refreshTurnByTurn(traveled: smooth.traveledMeters, totalPolylineLength: totalPolylineLength)
             }
         }
         service.onLocation = { [weak self] loc in
@@ -307,9 +317,6 @@ final class DirectionsScreenViewModel: BaseViewModel {
                         heading = Self.bearingDegrees(from: prev, to: loc.coordinate)
                     }
                 }
-                if let h = heading {
-                    self.navigationHeadingDegrees = h
-                }
                 self.lastPuckForCameraBearing = loc.coordinate
                 self.keyframeSmoother.push(
                     NavigationKeyframe(
@@ -324,31 +331,94 @@ final class DirectionsScreenViewModel: BaseViewModel {
         service.start()
     }
 
-    private func updateNavigationPreviewHeading(explicitCourse: CLLocationDirection?) {
-        if let c = explicitCourse, c.isFinite, c >= 0 {
-            navigationPreviewHeadingDegrees = c
-            return
+    /// Luôn có giá trị: heading-up theo −Y chiếu — ưu tiên course/GPS hoặc tiếp tuyến polyline.
+    func devPreviewBearingDegrees() -> Double {
+        if let h = lastDevPreviewBearingDegrees, h.isFinite, h >= 0 {
+            return h
         }
-        guard let sampler = activeRouteSampler, sampler.totalLength > 0 else { return }
-        navigationPreviewHeadingDegrees = sampler.courseDegreesClockwiseFromNorth(atDistance: distanceTraveledAlongRoute)
+        if let sampler = activeRouteSampler, sampler.totalLength > 1 {
+            let d = min(max(0, distanceTraveledAlongRoute), sampler.totalLength)
+            let span = min(14.0, max(4.0, sampler.totalLength * 0.03))
+            let d1 = max(0, d - span)
+            let d2 = min(sampler.totalLength, d + span)
+            let c1 = sampler.coordinate(atDistance: d1)
+            let c2 = sampler.coordinate(atDistance: d2)
+            let a = CLLocation(latitude: c1.latitude, longitude: c1.longitude)
+            let b = CLLocation(latitude: c2.latitude, longitude: c2.longitude)
+            if a.distance(from: b) > 0.4 {
+                return Self.bearingDegrees(from: c1, to: c2)
+            }
+        }
+        let coords = devPreviewRouteCoordinates
+        if coords.count >= 2 {
+            return Self.bearingDegrees(from: coords[0], to: coords[1])
+        }
+        if let poly = navigationPolyline?.routeCoordinates, poly.count >= 2 {
+            return Self.bearingDegrees(from: poly[0], to: poly[1])
+        }
+        return 0
     }
 
-    private func refreshNavigationPreviewLanePolylines() {
-        guard isNavigating, let route = route, let puck = navigationPuckCoordinate else {
-            navigationPreviewLanePolylines = []
+    func devPreviewCenterCoordinate(fallback: CLLocationCoordinate2D) -> CLLocationCoordinate2D {
+        if isNavigating,
+           let mk = activeRouteSampler,
+           mk.totalLength > 0
+        {
+            let traveled = min(max(0, distanceTraveledAlongRoute), mk.totalLength)
+            if let valhalla = devPreviewRouteSampler, valhalla.totalLength > 0 {
+                let scaled = traveled * (valhalla.totalLength / mk.totalLength)
+                return valhalla.coordinate(atDistance: min(scaled, valhalla.totalLength))
+            }
+            return mk.coordinate(atDistance: traveled)
+        }
+        guard devPreviewRouteCoordinates.count >= 2 else { return fallback }
+        return RouteSnapper.snapToPolyline(point: fallback, polyline: devPreviewRouteCoordinates) ?? fallback
+    }
+
+    private func replaceDevPreviewRouteCoordinates(_ coords: [CLLocationCoordinate2D]) {
+        devPreviewRouteCoordinates = coords
+        devPreviewRouteSampler = coords.count >= 2 ? RoutePolylineSampler(coordinates: coords) : nil
+        lastDevLaneRefreshAt = .distantPast
+    }
+
+    private func refreshDevPreviewLanePolylinesIfPossible(force: Bool = false) {
+        guard DirectionsEnvironment.isDev else { return }
+        guard !devPreviewIntersections.isEmpty else {
+            devPreviewLanePolylines = []
+            devPreviewDebugText = "Valhalla: no intersections"
+            if lastLoggedDevPreviewSummary != devPreviewDebugText {
+                lastLoggedDevPreviewSummary = devPreviewDebugText
+                DirectionsDevLog.log(devPreviewDebugText)
+            }
             return
         }
-        navigationPreviewLanePolylines = NavigationPreviewLaneGeometry.buildSpokeLanePolylines(
-            route: route,
-            userCoordinate: puck
+        let now = Date()
+        if !force, now.timeIntervalSince(lastDevLaneRefreshAt) < 0.22 { return }
+        lastDevLaneRefreshAt = now
+
+        let user = navigationPuckCoordinate ?? startEndpoint?.coordinate ?? endEndpoint?.coordinate
+        guard let user else { return }
+        devPreviewLanePolylines = Self.buildValhallaLanePolylinesNearUser(
+            intersections: devPreviewIntersections,
+            user: user,
+            maxIntersections: 10,
+            maxBearingsPerIntersection: 3,
+            laneLengthMeters: 25
         )
+        devPreviewDebugText = "Valhalla routePts=\(devPreviewRouteCoordinates.count) intersections=\(devPreviewIntersections.count) lanes=\(devPreviewLanePolylines.count)"
+        if lastLoggedDevPreviewSummary != devPreviewDebugText {
+            lastLoggedDevPreviewSummary = devPreviewDebugText
+            DirectionsDevLog.log(devPreviewDebugText)
+        }
     }
 
     /// Giữ camera bám puck; có `heading` thì xoay map như chế độ chỉ đường.
     private func followNavigationCamera(to coordinate: CLLocationCoordinate2D, headingDegrees: CLLocationDirection?) {
         guard isNavigating else { return }
-        if let heading = headingDegrees, heading.isFinite, heading >= 0 {
-            withAnimation(NativeMotion.directionsMapCamera) {
+        var tx = Transaction()
+        tx.disablesAnimations = true
+        withTransaction(tx) {
+            if let heading = headingDegrees, heading.isFinite, heading >= 0 {
                 cameraPosition = .camera(
                     MapCamera(
                         centerCoordinate: coordinate,
@@ -357,9 +427,7 @@ final class DirectionsScreenViewModel: BaseViewModel {
                         pitch: navigationCameraPitch
                     )
                 )
-            }
-        } else {
-            withAnimation(NativeMotion.directionsMapCamera) {
+            } else {
                 cameraPosition = .region(MKCoordinateRegion(center: coordinate, span: navigationRegionSpan))
             }
         }
@@ -378,13 +446,13 @@ final class DirectionsScreenViewModel: BaseViewModel {
         return deg
     }
 
-    private func refreshTurnByTurn(for route: MKRoute, traveled: CLLocationDistance, totalPolylineLength: CLLocationDistance) {
+    private func refreshTurnByTurn(traveled: CLLocationDistance, totalPolylineLength: CLLocationDistance) {
         if traveled >= totalPolylineLength - arrivalEpsilonMeters {
             completeNavigationArrival()
             return
         }
 
-        let steps = route.steps
+        let steps = navigationTurnSteps
         guard !steps.isEmpty else {
             if let name = endEndpoint?.name {
                 currentManeuverInstruction = String(format: String(localized: "directions_maneuver_head_toward_format"), name)
@@ -439,8 +507,8 @@ final class DirectionsScreenViewModel: BaseViewModel {
         let startCoord = startEndpoint?.coordinate
         let endCoord = endEndpoint?.coordinate
         let startToDestination: CLLocationDistance
-        if let d = route?.distance, d > 0 {
-            startToDestination = d
+        if navigationRouteDistanceMeters > 0 {
+            startToDestination = navigationRouteDistanceMeters
         } else if let a = startCoord, let b = endCoord {
             startToDestination = GeodesicDistance.meters(from: a, to: b)
         } else {
@@ -489,11 +557,8 @@ final class DirectionsScreenViewModel: BaseViewModel {
         distanceTraveledAlongRoute = 0
         currentManeuverInstruction = ""
         distanceToNextManeuverMeters = 0
-        navigationHeadingDegrees = 0
         navigationSessionStart = nil
         maxObservedSpeedKmh = 0
-        navigationPreviewHeadingDegrees = 0
-        navigationPreviewLanePolylines = []
     }
 
     private func releaseHeavyResourcesAfterTripFlow() {
@@ -502,31 +567,152 @@ final class DirectionsScreenViewModel: BaseViewModel {
         liveNavigationService?.stop()
         liveNavigationService = nil
         activeRouteSampler = nil
-        navigationRouteStatic = nil
-        navigationLaneSpokes = []
-        route = nil
+        navigationPolyline = nil
+        navigationRouteDistanceMeters = 0
+        navigationRouteDurationSeconds = 0
+        navigationTurnSteps = []
     }
 
     private func runRouteCalculation() async {
         defer { isCalculating = false }
         guard let start = startEndpoint, let end = endEndpoint else { return }
 
+        resetRouteCalculationState()
+
         do {
-            let calculated = try await routingService.calculateRoute(from: start, to: end, options: routeOptions)
-            route = calculated
-            activeRouteSampler = RoutePolylineSampler(polyline: calculated.polyline)
-            navigationRouteStatic = NavigationRouteStatic(coordinates: calculated.polyline.routeCoordinates)
-            navigationLaneSpokes = MiniMapLaneGenerator.generateLanes(from: calculated)
-            fitMap(to: calculated)
-        } catch DirectionsRoutingError.noRouteFound {
-            errorMessage = String(localized: "directions_error_no_route_found")
+            let nav = try await ValhallaOSRMRouteService.fetchNavigationRoute(
+                baseURL: DirectionsEnvironment.valhallaBaseURL,
+                start: start.coordinate,
+                end: end.coordinate,
+                options: routeOptions
+            )
+            applyValhallaNavigationRoute(nav)
+            if let poly = navigationPolyline {
+                fitMap(to: poly)
+            }
         } catch {
-            errorMessage = error.localizedDescription
+            DirectionsDevLog.log("Valhalla route failed, MapKit fallback: \(error.localizedDescription)")
+            do {
+                let calculated = try await routingService.calculateRoute(from: start, to: end, options: routeOptions)
+                applyMapKitFallbackRoute(calculated)
+                fitMap(to: calculated.polyline)
+            } catch DirectionsRoutingError.noRouteFound {
+                errorMessage = String(localized: "directions_error_no_route_found")
+            } catch {
+                errorMessage = error.localizedDescription
+            }
         }
     }
 
-    private func fitMap(to route: MKRoute) {
-        let rect = route.polyline.boundingMapRect
+    private func clearComputedRouteState() {
+        navigationPolyline = nil
+        navigationRouteDistanceMeters = 0
+        navigationRouteDurationSeconds = 0
+        navigationTurnSteps = []
+        activeRouteSampler = nil
+    }
+
+    private func resetRouteCalculationState() {
+        clearComputedRouteState()
+        replaceDevPreviewRouteCoordinates([])
+        devPreviewLanePolylines = []
+        devPreviewIntersections = []
+        lastLoggedDevPreviewSummary = nil
+        devPreviewDebugText = ""
+    }
+
+    private func applyValhallaNavigationRoute(_ nav: ValhallaOSRMRouteService.ValhallaNavigationRoute) {
+        let poly = MKPolyline.fromRouteCoordinates(nav.routeCoordinates)
+        navigationPolyline = poly
+        navigationRouteDistanceMeters = nav.distanceMeters
+        navigationRouteDurationSeconds = nav.durationSeconds
+        navigationTurnSteps = nav.turnSteps
+        activeRouteSampler = RoutePolylineSampler(coordinates: nav.routeCoordinates)
+        replaceDevPreviewRouteCoordinates(nav.routeCoordinates)
+        devPreviewIntersections = nav.intersections
+        devPreviewLanePolylines = []
+        refreshDevPreviewLanePolylinesIfPossible(force: true)
+    }
+
+    private func applyMapKitFallbackRoute(_ mk: MKRoute) {
+        navigationPolyline = mk.polyline
+        navigationRouteDistanceMeters = mk.distance
+        navigationRouteDurationSeconds = mk.expectedTravelTime
+        navigationTurnSteps = mk.steps.map { NavigationTurnStep(distance: $0.distance, instructions: $0.instructions) }
+        activeRouteSampler = RoutePolylineSampler(polyline: mk.polyline)
+        replaceDevPreviewRouteCoordinates([])
+        devPreviewIntersections = []
+        devPreviewLanePolylines = []
+        devPreviewDebugText = "MapKit fallback (no Valhalla context)"
+        lastLoggedDevPreviewSummary = nil
+    }
+
+    private static func buildValhallaLanePolylinesNearUser(
+        intersections: [ValhallaOSRMRouteService.Intersection],
+        user: CLLocationCoordinate2D,
+        maxIntersections: Int,
+        maxBearingsPerIntersection: Int,
+        laneLengthMeters: Double
+    ) -> [[CLLocationCoordinate2D]] {
+        guard !intersections.isEmpty else { return [] }
+        let sorted = intersections.sorted { a, b in
+            let da = squaredDistance(from: user, to: a.coordinate)
+            let db = squaredDistance(from: user, to: b.coordinate)
+            return da < db
+        }
+
+        var picked: [ValhallaOSRMRouteService.Intersection] = []
+        picked.reserveCapacity(maxIntersections)
+        let minHubSeparationMeters: CLLocationDistance = 18
+        for h in sorted {
+            guard picked.count < maxIntersections else { break }
+            let locH = CLLocation(latitude: h.coordinate.latitude, longitude: h.coordinate.longitude)
+            let tooClose = picked.contains { p in
+                locH.distance(from: CLLocation(latitude: p.coordinate.latitude, longitude: p.coordinate.longitude)) < minHubSeparationMeters
+            }
+            if tooClose { continue }
+            picked.append(h)
+        }
+
+        var out: [[CLLocationCoordinate2D]] = []
+        out.reserveCapacity(picked.count * maxBearingsPerIntersection)
+        for h in picked {
+            for b in h.bearings.prefix(maxBearingsPerIntersection) {
+                let end = destinationPoint(start: h.coordinate, bearingDegrees: Double(b), distanceMeters: laneLengthMeters)
+                out.append([h.coordinate, end])
+            }
+        }
+        return out
+    }
+
+    private static func squaredDistance(from: CLLocationCoordinate2D, to: CLLocationCoordinate2D) -> Double {
+        let dx = from.latitude - to.latitude
+        let dy = from.longitude - to.longitude
+        return dx * dx + dy * dy
+    }
+
+    private static func destinationPoint(
+        start: CLLocationCoordinate2D,
+        bearingDegrees: Double,
+        distanceMeters: Double
+    ) -> CLLocationCoordinate2D {
+        let r = 6_371_000.0
+        let brng = bearingDegrees * (.pi / 180)
+        let lat1 = start.latitude * (.pi / 180)
+        let lon1 = start.longitude * (.pi / 180)
+        let lat2 = asin(
+            sin(lat1) * cos(distanceMeters / r) +
+                cos(lat1) * sin(distanceMeters / r) * cos(brng)
+        )
+        let lon2 = lon1 + atan2(
+            sin(brng) * sin(distanceMeters / r) * cos(lat1),
+            cos(distanceMeters / r) - sin(lat1) * sin(lat2)
+        )
+        return CLLocationCoordinate2D(latitude: lat2 * 180 / .pi, longitude: lon2 * 180 / .pi)
+    }
+
+    private func fitMap(to polyline: MKPolyline) {
+        let rect = polyline.boundingMapRect
         var region = MKCoordinateRegion(rect)
         region.span.latitudeDelta *= 1.12
         region.span.longitudeDelta *= 1.12

@@ -4,7 +4,6 @@ import CoreLocation
 
 struct DirectionsScreen: View {
     @StateObject var viewModel: DirectionsScreenViewModel
-    @StateObject private var miniMapViewModel = MiniMapViewModel()
     @State private var showRouteSettings = false
     @State private var showStopNavigationConfirm = false
     @State private var showBackDuringNavigationConfirm = false
@@ -12,8 +11,8 @@ struct DirectionsScreen: View {
     var body: some View {
         ZStack(alignment: .bottom) {
             Map(position: $viewModel.cameraPosition) {
-                if let route = viewModel.route {
-                    MapPolyline(route.polyline)
+                if let poly = viewModel.navigationPolyline {
+                    MapPolyline(poly)
                         .stroke(.blue, lineWidth: 6)
                 }
 
@@ -40,23 +39,25 @@ struct DirectionsScreen: View {
             }
             .ignoresSafeArea(edges: .bottom)
 
-            if DirectionsEnvironment.isDev,
-               viewModel.isNavigating,
-               let route = viewModel.route,
-               let puck = viewModel.navigationPuckCoordinate,
-               route.polyline.routeCoordinates.count >= 2
-            {
-                DirectionsNavigationPreviewView(
-                    routeCoordinates: route.polyline.routeCoordinates,
-                    centerCoordinate: puck,
-                    bearingDegrees: viewModel.navigationPreviewHeadingDegrees,
-                    progressMeters: viewModel.distanceTraveledAlongRoute,
-                    lanePolylines: viewModel.navigationPreviewLanePolylines
-                )
-                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-                .padding(.leading, 12)
-                .padding(.top, 56)
-                .allowsHitTesting(false)
+            if DirectionsEnvironment.isDev {
+                let routeForPreview = !viewModel.devPreviewRouteCoordinates.isEmpty
+                    ? viewModel.devPreviewRouteCoordinates
+                    : (viewModel.navigationPolyline?.routeCoordinates ?? [])
+                if let centerFallback = (viewModel.isNavigating ? viewModel.navigationPuckCoordinate : viewModel.startEndpoint?.coordinate),
+                   !routeForPreview.isEmpty
+                {
+                    DirectionsNavigationPreviewView(
+                        routeCoordinates: routeForPreview,
+                        centerCoordinate: viewModel.devPreviewCenterCoordinate(fallback: centerFallback),
+                        bearingDegrees: viewModel.devPreviewBearingDegrees(),
+                        lanePolylines: viewModel.devPreviewLanePolylines,
+                        debugText: viewModel.devPreviewDebugText
+                    )
+                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+                    .padding(.leading, 12)
+                    .padding(.top, 56)
+                    .allowsHitTesting(false)
+                }
             }
 
             if let start = viewModel.startEndpoint, let end = viewModel.endEndpoint {
@@ -81,16 +82,6 @@ struct DirectionsScreen: View {
                 }
                 .padding(.horizontal, 12)
                 .padding(.bottom, 10)
-            }
-
-            if viewModel.isNavigating, miniMapViewModel.isReady {
-                MiniMapView(viewModel: miniMapViewModel)
-                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-                    .padding(.leading, 12)
-                    .padding(.top, 56)
-                    .allowsHitTesting(false)
-                    .transition(.opacity.combined(with: .scale(scale: 0.8)))
-                    .animation(NativeMotion.miniMapSmooth, value: viewModel.isNavigating)
             }
 
             if viewModel.isCalculating {
@@ -161,27 +152,6 @@ struct DirectionsScreen: View {
         }
         .task {
             await viewModel.loadRouteFromSavedPlaces()
-        }
-        .onChange(of: viewModel.route) {
-            if let routeStatic = viewModel.navigationRouteStatic {
-                miniMapViewModel.configure(
-                    routeStatic: routeStatic,
-                    laneSpokes: viewModel.navigationLaneSpokes
-                )
-            }
-        }
-        .onChange(of: viewModel.navigationPuckCoordinate?.latitude) {
-            guard viewModel.isNavigating, let puck = viewModel.navigationPuckCoordinate else { return }
-            miniMapViewModel.update(
-                center: puck,
-                bearingDegrees: viewModel.navigationHeadingDegrees,
-                progressMeters: viewModel.distanceTraveledAlongRoute
-            )
-        }
-        .onChange(of: viewModel.isNavigating) {
-            if !viewModel.isNavigating {
-                miniMapViewModel.reset()
-            }
         }
         .onDisappear {
             viewModel.stopNavigation()
@@ -419,13 +389,13 @@ struct DirectionsScreen: View {
             .accessibilityHidden(true)
 
             VStack(alignment: .leading, spacing: 6) {
-                if let route = viewModel.route {
+                if viewModel.navigationPolyline != nil, viewModel.navigationRouteDistanceMeters > 0 {
                     HStack(spacing: 6) {
-                        Text(RouteSummaryFormatting.distance(meters: route.distance))
+                        Text(RouteSummaryFormatting.distance(meters: viewModel.navigationRouteDistanceMeters))
                             .foregroundStyle(Color.blue)
                         Text("·")
                             .foregroundStyle(.secondary)
-                        Text(RouteSummaryFormatting.duration(seconds: route.expectedTravelTime))
+                        Text(RouteSummaryFormatting.duration(seconds: viewModel.navigationRouteDurationSeconds))
                             .foregroundStyle(Color.orange)
                         Text("·")
                             .foregroundStyle(.secondary)
@@ -512,7 +482,7 @@ struct DirectionsScreen: View {
         }
         .buttonStyle(.plain)
         .accessibilityLabel(Text(AppString.directionsStartTripButton))
-        .disabled(viewModel.route == nil || viewModel.isCalculating)
+        .disabled(viewModel.navigationPolyline == nil || viewModel.isCalculating)
     }
 
 }

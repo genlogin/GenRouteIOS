@@ -5,7 +5,7 @@ enum DirectionsRoutingError: Error {
     case noRouteFound
 }
 
-/// Chỉ chịu trách nhiệm gọi MapKit với `DirectionsRouteOptions` (SRP, DIP).
+/// Fallback MapKit khi Valhalla lỗi; tùy chọn vẫn là `DirectionsRouteOptions`.
 protocol DirectionsRoutingServiceProtocol: Sendable {
     func calculateRoute(
         from start: RouteEndpoint,

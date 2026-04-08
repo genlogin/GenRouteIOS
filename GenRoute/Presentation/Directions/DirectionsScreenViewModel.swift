@@ -24,6 +24,10 @@ final class DirectionsScreenViewModel: BaseViewModel {
     @Published var cameraPosition: MapCameraPosition = .automatic
     /// Góc xoay bản đồ (độ), dùng cho la bàn tùy chỉnh — đồng bộ qua `onMapCameraChange`.
     @Published private(set) var mapHeadingDegrees: Double = 0
+    /// Heading (0° = Bắc, cùng chiều MapKit) cho mini-map **heading-up**: ưu tiên course/GPS, không phụ thuộc `mapHeadingDegrees` khi camera `.region`.
+    @Published private(set) var navigationPreviewHeadingDegrees: CLLocationDirection = 0
+    /// Các đoạn lane phụ (2 điểm/bearing) giống Android MapLibre `buildLanePolylinesNearUser`.
+    @Published private(set) var navigationPreviewLanePolylines: [[CLLocationCoordinate2D]] = []
     @Published var isCalculating = true
     @Published var errorMessage: String?
 
@@ -59,6 +63,8 @@ final class DirectionsScreenViewModel: BaseViewModel {
     private var liveNavigationService: LiveNavigationLocationService?
     private var activeRouteSampler: RoutePolylineSampler?
     private var lastPuckForCameraBearing: CLLocationCoordinate2D?
+    private var smoothingTask: Task<Void, Never>?
+    private let keyframeSmoother = NavigationKeyframeSmoother()
 
     /// Camera điều hướng: zoom gần + pitch (giống Google Maps).
     private let navigationCameraDistance: CLLocationDistance = 720
@@ -160,6 +166,9 @@ final class DirectionsScreenViewModel: BaseViewModel {
         maxObservedSpeedKmh = 0
         lastPuckForCameraBearing = startCoord
         navigationPuckCoordinate = startCoord
+        keyframeSmoother.reset()
+        updateNavigationPreviewHeading(explicitCourse: nil)
+        refreshNavigationPreviewLanePolylines()
 
         let totalLen = min(route.distance, sampler.totalLength)
         refreshTurnByTurn(for: route, traveled: 0, totalPolylineLength: totalLen)
@@ -175,6 +184,8 @@ final class DirectionsScreenViewModel: BaseViewModel {
     func stopNavigation() {
         simulationTask?.cancel()
         simulationTask = nil
+        smoothingTask?.cancel()
+        smoothingTask = nil
         liveNavigationService?.stop()
         liveNavigationService = nil
         isNavigating = false
@@ -188,6 +199,8 @@ final class DirectionsScreenViewModel: BaseViewModel {
         pendingTripSummary = nil
         navigationSessionStart = nil
         maxObservedSpeedKmh = 0
+        navigationPreviewHeadingDegrees = 0
+        navigationPreviewLanePolylines = []
     }
 
     /// Gọi sau khi user bấm Stop và xác nhận: chốt thống kê, hiện dialog hoàn thành.
@@ -249,6 +262,8 @@ final class DirectionsScreenViewModel: BaseViewModel {
                     self.navigationHeadingDegrees = h
                 }
                 previousPuck = coord
+                updateNavigationPreviewHeading(explicitCourse: heading)
+                refreshNavigationPreviewLanePolylines()
                 followNavigationCamera(to: coord, headingDegrees: heading)
 
                 refreshTurnByTurn(for: route, traveled: distance, totalPolylineLength: totalPolylineLength)
@@ -260,13 +275,26 @@ final class DirectionsScreenViewModel: BaseViewModel {
     private func startLiveUserPuck(route: MKRoute, sampler: RoutePolylineSampler, totalPolylineLength: CLLocationDistance) {
         let service = LiveNavigationLocationService()
         liveNavigationService = service
+        keyframeSmoother.reset()
+        smoothingTask?.cancel()
+        smoothingTask = Task { @MainActor in
+            while !Task.isCancelled {
+                try? await Task.sleep(for: .milliseconds(33))
+                guard isNavigating else { break }
+                guard let smooth = keyframeSmoother.sample(at: Date().timeIntervalSince1970) else { continue }
+                navigationPuckCoordinate = smooth.coordinate
+                distanceTraveledAlongRoute = smooth.traveledMeters
+                updateNavigationPreviewHeading(explicitCourse: smooth.headingDegrees)
+                refreshNavigationPreviewLanePolylines()
+                followNavigationCamera(to: smooth.coordinate, headingDegrees: smooth.headingDegrees)
+                refreshTurnByTurn(for: route, traveled: smooth.traveledMeters, totalPolylineLength: totalPolylineLength)
+            }
+        }
         service.onLocation = { [weak self] loc in
             Task { @MainActor in
                 guard let self else { return }
                 guard self.isNavigating else { return }
-                self.navigationPuckCoordinate = loc.coordinate
                 let traveled = sampler.distanceAlongRoute(closestTo: loc.coordinate)
-                self.distanceTraveledAlongRoute = traveled
                 if loc.speed >= 0 {
                     self.maxObservedSpeedKmh = max(self.maxObservedSpeedKmh, loc.speed * 3.6)
                 }
@@ -283,12 +311,37 @@ final class DirectionsScreenViewModel: BaseViewModel {
                     self.navigationHeadingDegrees = h
                 }
                 self.lastPuckForCameraBearing = loc.coordinate
-                self.followNavigationCamera(to: loc.coordinate, headingDegrees: heading)
-
-                self.refreshTurnByTurn(for: route, traveled: traveled, totalPolylineLength: totalPolylineLength)
+                self.keyframeSmoother.push(
+                    NavigationKeyframe(
+                        coordinate: loc.coordinate,
+                        headingDegrees: heading,
+                        traveledMeters: traveled,
+                        timestamp: loc.timestamp.timeIntervalSince1970
+                    )
+                )
             }
         }
         service.start()
+    }
+
+    private func updateNavigationPreviewHeading(explicitCourse: CLLocationDirection?) {
+        if let c = explicitCourse, c.isFinite, c >= 0 {
+            navigationPreviewHeadingDegrees = c
+            return
+        }
+        guard let sampler = activeRouteSampler, sampler.totalLength > 0 else { return }
+        navigationPreviewHeadingDegrees = sampler.courseDegreesClockwiseFromNorth(atDistance: distanceTraveledAlongRoute)
+    }
+
+    private func refreshNavigationPreviewLanePolylines() {
+        guard isNavigating, let route = route, let puck = navigationPuckCoordinate else {
+            navigationPreviewLanePolylines = []
+            return
+        }
+        navigationPreviewLanePolylines = NavigationPreviewLaneGeometry.buildSpokeLanePolylines(
+            route: route,
+            userCoordinate: puck
+        )
     }
 
     /// Giữ camera bám puck; có `heading` thì xoay map như chế độ chỉ đường.
@@ -439,6 +492,8 @@ final class DirectionsScreenViewModel: BaseViewModel {
         navigationHeadingDegrees = 0
         navigationSessionStart = nil
         maxObservedSpeedKmh = 0
+        navigationPreviewHeadingDegrees = 0
+        navigationPreviewLanePolylines = []
     }
 
     private func releaseHeavyResourcesAfterTripFlow() {

@@ -40,6 +40,25 @@ struct DirectionsScreen: View {
             }
             .ignoresSafeArea(edges: .bottom)
 
+            if DirectionsEnvironment.isDev,
+               viewModel.isNavigating,
+               let route = viewModel.route,
+               let puck = viewModel.navigationPuckCoordinate,
+               route.polyline.routeCoordinates.count >= 2
+            {
+                DirectionsNavigationPreviewView(
+                    routeCoordinates: route.polyline.routeCoordinates,
+                    centerCoordinate: puck,
+                    bearingDegrees: viewModel.navigationPreviewHeadingDegrees,
+                    progressMeters: viewModel.distanceTraveledAlongRoute,
+                    lanePolylines: viewModel.navigationPreviewLanePolylines
+                )
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+                .padding(.leading, 12)
+                .padding(.top, 56)
+                .allowsHitTesting(false)
+            }
+
             if let start = viewModel.startEndpoint, let end = viewModel.endEndpoint {
                 Group {
                     if viewModel.isNavigating {
@@ -495,4 +514,5 @@ struct DirectionsScreen: View {
         .accessibilityLabel(Text(AppString.directionsStartTripButton))
         .disabled(viewModel.route == nil || viewModel.isCalculating)
     }
+
 }

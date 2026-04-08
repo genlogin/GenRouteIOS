@@ -9,11 +9,18 @@ import SwiftUI
 final class MiniMapViewModel: BaseViewModel {
     private let projection: NavigationPreviewProjecting
     private var routeStatic: NavigationRouteStatic?
+    private var allLaneSpokes: [LaneSpoke] = []
+
+    /// Khoảng cách tối thiểu user phải di chuyển để tính lại lane (throttle).
+    private let laneRefreshThresholdMeters: CLLocationDistance = 10
+    private var lastLaneRefreshCoordinate: CLLocationCoordinate2D?
 
     /// Điểm màn hình phần tuyến còn lại (xanh).
     @Published private(set) var remainingScreenPoints: [CGPoint] = []
     /// Điểm màn hình phần tuyến đã đi (trắng).
     @Published private(set) var traveledScreenPoints: [CGPoint] = []
+    /// Các spoke lane phụ (mỗi phần tử là mảng 2 CGPoint: [hub, endpoint]).
+    @Published private(set) var laneScreenSegments: [[CGPoint]] = []
     /// Đã có dữ liệu để vẽ.
     @Published private(set) var isReady: Bool = false
 
@@ -23,8 +30,10 @@ final class MiniMapViewModel: BaseViewModel {
     }
 
     /// Gọi một lần khi route được tính xong.
-    func configure(routeStatic: NavigationRouteStatic) {
+    func configure(routeStatic: NavigationRouteStatic, laneSpokes: [LaneSpoke]) {
         self.routeStatic = routeStatic
+        self.allLaneSpokes = laneSpokes
+        self.lastLaneRefreshCoordinate = nil
     }
 
     /// Gọi mỗi tick (~20fps) từ DirectionsScreen khi navigation active.
@@ -72,14 +81,44 @@ final class MiniMapViewModel: BaseViewModel {
             sizePx: diameter
         )
 
+        // Lane spokes — throttle theo khoảng cách di chuyển
+        let needsLaneRefresh: Bool
+        if let last = lastLaneRefreshCoordinate {
+            needsLaneRefresh = GeodesicDistance.meters(from: last, to: center) >= laneRefreshThresholdMeters
+        } else {
+            needsLaneRefresh = true
+        }
+
+        if needsLaneRefresh {
+            lastLaneRefreshCoordinate = center
+            let nearbySpokes = MiniMapLaneGenerator.filterNearUser(
+                spokes: allLaneSpokes,
+                userCoordinate: center,
+                radiusMeters: radiusMeters * 2.5
+            )
+            laneScreenSegments = nearbySpokes.map { spoke in
+                let localPoints = spoke.coordinates.map { coord in
+                    projection.projectToLocal(point: coord, center: center, bearingDegrees: bearingDegrees)
+                }
+                return projection.normalizeToScreen(
+                    points: localPoints,
+                    radiusMeters: radiusMeters,
+                    sizePx: diameter
+                )
+            }
+        }
+
         isReady = remainingScreenPoints.count >= 2 || traveledScreenPoints.count >= 2
     }
 
     /// Reset khi navigation kết thúc.
     func reset() {
         routeStatic = nil
+        allLaneSpokes = []
+        lastLaneRefreshCoordinate = nil
         remainingScreenPoints = []
         traveledScreenPoints = []
+        laneScreenSegments = []
         isReady = false
     }
 }

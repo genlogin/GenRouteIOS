@@ -145,7 +145,10 @@ struct DirectionsScreen: View {
         }
         .onChange(of: viewModel.route) {
             if let routeStatic = viewModel.navigationRouteStatic {
-                miniMapViewModel.configure(routeStatic: routeStatic)
+                miniMapViewModel.configure(
+                    routeStatic: routeStatic,
+                    laneSpokes: viewModel.navigationLaneSpokes
+                )
             }
         }
         .onChange(of: viewModel.navigationPuckCoordinate?.latitude) {

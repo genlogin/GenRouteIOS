@@ -13,4 +13,7 @@ enum NativeMotion {
 
     /// La bàn trên `DirectionsScreen`
     static let directionsCompassRotation = Animation.linear(duration: 0.12)
+
+    /// Mini map preview transition (xuất hiện / biến mất).
+    static let miniMapSmooth = Animation.easeOut(duration: 0.22)
 }

@@ -4,6 +4,7 @@ import CoreLocation
 
 struct DirectionsScreen: View {
     @StateObject var viewModel: DirectionsScreenViewModel
+    @StateObject private var miniMapViewModel = MiniMapViewModel()
     @State private var showRouteSettings = false
     @State private var showStopNavigationConfirm = false
     @State private var showBackDuringNavigationConfirm = false
@@ -61,6 +62,16 @@ struct DirectionsScreen: View {
                 }
                 .padding(.horizontal, 12)
                 .padding(.bottom, 10)
+            }
+
+            if viewModel.isNavigating, miniMapViewModel.isReady {
+                MiniMapView(viewModel: miniMapViewModel)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+                    .padding(.leading, 12)
+                    .padding(.top, 56)
+                    .allowsHitTesting(false)
+                    .transition(.opacity.combined(with: .scale(scale: 0.8)))
+                    .animation(NativeMotion.miniMapSmooth, value: viewModel.isNavigating)
             }
 
             if viewModel.isCalculating {
@@ -131,6 +142,24 @@ struct DirectionsScreen: View {
         }
         .task {
             await viewModel.loadRouteFromSavedPlaces()
+        }
+        .onChange(of: viewModel.route) {
+            if let routeStatic = viewModel.navigationRouteStatic {
+                miniMapViewModel.configure(routeStatic: routeStatic)
+            }
+        }
+        .onChange(of: viewModel.navigationPuckCoordinate?.latitude) {
+            guard viewModel.isNavigating, let puck = viewModel.navigationPuckCoordinate else { return }
+            miniMapViewModel.update(
+                center: puck,
+                bearingDegrees: viewModel.navigationHeadingDegrees,
+                progressMeters: viewModel.distanceTraveledAlongRoute
+            )
+        }
+        .onChange(of: viewModel.isNavigating) {
+            if !viewModel.isNavigating {
+                miniMapViewModel.reset()
+            }
         }
         .onDisappear {
             viewModel.stopNavigation()
